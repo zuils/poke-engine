@@ -1,5 +1,6 @@
 use super::abilities::Abilities;
 use super::items::Items;
+use super::z_moves::get_z_move_for;
 use crate::choices::{Choices, MoveCategory};
 use crate::define_enum_with_from_str;
 use crate::instruction::BoostInstruction;
@@ -53,6 +54,7 @@ fn multiply_boost(boost_num: i8, stat_value: i16) -> i16 {
 pub enum MoveChoice {
     MoveTera(PokemonMoveIndex),
     MoveMega(PokemonMoveIndex),
+    MoveZ(PokemonMoveIndex),
     Move(PokemonMoveIndex),
     Switch(PokemonIndex),
     TeamPreview(PokemonIndex, PokemonIndex, PokemonIndex), // lead, second, third
@@ -67,6 +69,9 @@ impl MoveChoice {
             }
             MoveChoice::MoveMega(index) => {
                 format!("{}-mega", side.get_active_immutable().moves[&index].id).to_lowercase()
+            }
+            MoveChoice::MoveZ(index) => {
+                format!("{}-z", side.get_active_immutable().moves[&index].id).to_lowercase()
             }
             MoveChoice::Move(index) => {
                 format!("{}", side.get_active_immutable().moves[&index].id).to_lowercase()
@@ -125,9 +130,7 @@ impl MoveChoice {
             ));
         }
 
-        // check if s endswith `-tera`
-        // if it does, find the move with the name and return MoveChoice::MoveTera
-        // if it doesn't, find the move with the name and return MoveChoice::Move
+        // Check for a mechanics suffix before resolving the base move.
         let mut move_iter = side.get_active_immutable().moves.into_iter();
         let mut move_name = s;
         if move_name.ends_with("-tera") {
@@ -142,6 +145,13 @@ impl MoveChoice {
             while let Some(mv) = move_iter.next() {
                 if format!("{:?}", mv.id).to_lowercase() == move_name {
                     return Some(MoveChoice::MoveMega(move_iter.pokemon_move_index));
+                }
+            }
+        } else if move_name.ends_with("-z") {
+            move_name = move_name[..move_name.len() - 2].to_string();
+            while let Some(mv) = move_iter.next() {
+                if format!("{:?}", mv.id).to_lowercase() == move_name {
+                    return Some(MoveChoice::MoveZ(move_iter.pokemon_move_index));
                 }
             }
         } else {
@@ -488,6 +498,7 @@ impl Pokemon {
         taunted: bool,
         can_tera: bool,
         side_can_mega: bool,
+        can_z_move: bool,
     ) {
         let mut iter = self.moves.into_iter();
         while let Some(p) = iter.next() {
@@ -520,6 +531,11 @@ impl Pokemon {
                 }
                 if side_can_mega && self.can_mega_evolve() {
                     vec.push(MoveChoice::MoveMega(iter.pokemon_move_index));
+                }
+                if can_z_move
+                    && get_z_move_for(self, &self.moves[&iter.pokemon_move_index].choice).is_some()
+                {
+                    vec.push(MoveChoice::MoveZ(iter.pokemon_move_index));
                 }
             }
         }
@@ -1153,7 +1169,10 @@ impl State {
 
         if self.side_one.force_trapped {
             s1_options.retain(|x| match x {
-                MoveChoice::Move(_) | MoveChoice::MoveTera(_) | MoveChoice::MoveMega(_) => true,
+                MoveChoice::Move(_)
+                | MoveChoice::MoveTera(_)
+                | MoveChoice::MoveMega(_)
+                | MoveChoice::MoveZ(_) => true,
                 MoveChoice::Switch(_) => false,
                 MoveChoice::TeamPreview(_, _, _) => false,
                 MoveChoice::None => true,
@@ -1176,12 +1195,16 @@ impl State {
                 taunted,
                 self.side_one.can_use_tera(),
                 self.side_one.can_use_mega(),
+                self.side_one.can_use_z_move(),
             );
         }
 
         if self.side_two.force_trapped {
             s2_options.retain(|x| match x {
-                MoveChoice::Move(_) | MoveChoice::MoveTera(_) | MoveChoice::MoveMega(_) => true,
+                MoveChoice::Move(_)
+                | MoveChoice::MoveTera(_)
+                | MoveChoice::MoveMega(_)
+                | MoveChoice::MoveZ(_) => true,
                 MoveChoice::Switch(_) => false,
                 MoveChoice::TeamPreview(_, _, _) => false,
                 MoveChoice::None => true,
@@ -1204,6 +1227,7 @@ impl State {
                 taunted,
                 self.side_two.can_use_tera(),
                 self.side_two.can_use_mega(),
+                self.side_two.can_use_z_move(),
             );
         }
 
@@ -1293,6 +1317,7 @@ impl State {
                 taunted,
                 self.side_one.can_use_tera(),
                 self.side_one.can_use_mega(),
+                self.side_one.can_use_z_move(),
             );
             if !self.side_one.trapped(side_two_active) {
                 self.side_one.add_switches(&mut side_one_options);
@@ -1323,6 +1348,7 @@ impl State {
                 taunted,
                 self.side_two.can_use_tera(),
                 self.side_two.can_use_mega(),
+                self.side_two.can_use_z_move(),
             );
             if !self.side_two.trapped(side_one_active) {
                 self.side_two.add_switches(&mut side_two_options);

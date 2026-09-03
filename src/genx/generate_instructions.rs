@@ -32,6 +32,7 @@ use super::items::{
     item_on_switch_in, Items,
 };
 use super::state::{MoveChoice, PokemonVolatileStatus, Terrain, Weather};
+use super::z_moves::{apply_z_status_effect, get_z_move_for, ZStatusEffect};
 use crate::choices::{Choice, MoveCategory};
 use crate::instruction::{
     ChangeStatusInstruction, DamageInstruction, Instruction, StateInstructions, SwitchInstruction,
@@ -1204,8 +1205,11 @@ fn check_move_hit_or_miss(
     let attacking_side = state.get_side(attacking_side_ref);
     let attacking_pokemon = attacking_side.get_active_immutable();
 
-    let mut percent_hit =
-        ((choice.accuracy / 100.0) * boosted_accuracy(attacking_side.accuracy_boost)).min(1.0);
+    let mut percent_hit = if choice.is_z_move && choice.category != MoveCategory::Status {
+        1.0
+    } else {
+        ((choice.accuracy / 100.0) * boosted_accuracy(attacking_side.accuracy_boost)).min(1.0)
+    };
     if Some((0, 0)) == damage {
         percent_hit = 0.0;
     }
@@ -2392,7 +2396,7 @@ pub fn generate_instructions_from_move(
                 || defender_active.ability == Abilities::SHELLARMOR
             {
                 0.0
-            } else if choice.move_id.guaranteed_crit() {
+            } else if choice.z_crit_ratio > 0 || choice.move_id.guaranteed_crit() {
                 1.0
             } else if choice.move_id.increased_crit_ratio() {
                 1.0 / 8.0
@@ -2415,7 +2419,7 @@ pub fn generate_instructions_from_move(
                 || defender_active.ability == Abilities::SHELLARMOR
             {
                 0.0
-            } else if choice.move_id.guaranteed_crit() {
+            } else if choice.z_crit_ratio > 0 || choice.move_id.guaranteed_crit() {
                 1.0
             } else if choice.move_id.increased_crit_ratio() {
                 1.0 / 8.0
@@ -2428,7 +2432,7 @@ pub fn generate_instructions_from_move(
             branch_damage = (max_crit_damage as f32 * 0.925) as i16;
             incoming_instructions.update_percentage(1.0 - crit_rate);
             regular_damage = (max_damage_dealt as f32 * 0.925) as i16;
-        } else if choice.move_id.guaranteed_crit()
+        } else if (choice.z_crit_ratio > 0 || choice.move_id.guaranteed_crit())
             && defender_active.ability != Abilities::BATTLEARMOR
             && defender_active.ability != Abilities::SHELLARMOR
         {
@@ -2474,6 +2478,35 @@ pub fn generate_instructions_from_move(
 
     combine_duplicate_instructions(&mut final_instructions);
     return;
+}
+
+fn add_z_terrain_effect(
+    state: &mut State,
+    choice: &Choice,
+    attacking_side: &SideReference,
+    instructions: &mut StateInstructions,
+) {
+    let (new_terrain, turns) = if choice.z_sets_psychic_terrain {
+        (Terrain::PSYCHICTERRAIN, 5)
+    } else if choice.z_clears_terrain {
+        (Terrain::NONE, 0)
+    } else {
+        return;
+    };
+    if state.terrain.terrain_type == new_terrain {
+        return;
+    }
+    instructions
+        .instruction_list
+        .push(Instruction::ChangeTerrain(ChangeTerrain {
+            new_terrain,
+            new_terrain_turns_remaining: turns,
+            previous_terrain: state.terrain.terrain_type,
+            previous_terrain_turns_remaining: state.terrain.turns_remaining,
+        }));
+    state.terrain.terrain_type = new_terrain;
+    state.terrain.turns_remaining = turns;
+    let _ = attacking_side;
 }
 
 fn combine_duplicate_instructions(list_of_instructions: &mut Vec<StateInstructions>) {
@@ -3750,6 +3783,8 @@ fn run_move(
         }
     }
 
+    add_z_terrain_effect(state, choice, &attacking_side, &mut instructions);
+
     if state
         .get_side_immutable(&attacking_side.get_other_side())
         .get_active_immutable()
@@ -4047,6 +4082,7 @@ pub fn generate_instructions_from_move_pair(
     let mut side_one_choice;
     let mut s1_tera = false;
     let mut s1_mega = false;
+    let mut s1_z = false;
     let mut s1_replacing_fainted_pkmn = false;
     match side_one_move {
         MoveChoice::Switch(switch_id) => {
@@ -4071,6 +4107,37 @@ pub fn generate_instructions_from_move_pair(
             side_one_choice.move_index = *move_index;
             s1_mega = true;
         }
+        MoveChoice::MoveZ(move_index) => {
+            side_one_choice = state.side_one.get_active().moves[move_index].choice.clone();
+            side_one_choice.move_index = *move_index;
+            if let Some(z_move) = get_z_move_for(state.side_one.get_active(), &side_one_choice) {
+                side_one_choice.move_type = z_move.move_type;
+                side_one_choice.category = z_move.category;
+                side_one_choice.base_power = z_move.base_power;
+                side_one_choice.is_z_move = true;
+                side_one_choice.z_fixed_damage_fraction = z_move.fixed_damage_fraction;
+                side_one_choice.z_sets_psychic_terrain = matches!(
+                    z_move.terrain_effect,
+                    Some(super::z_moves::TerrainEffect::SetPsychic)
+                );
+                side_one_choice.z_clears_terrain = matches!(
+                    z_move.terrain_effect,
+                    Some(super::z_moves::TerrainEffect::Clear)
+                );
+                if !z_move.status {
+                    side_one_choice.secondaries = None;
+                    side_one_choice.drain = None;
+                    side_one_choice.recoil = None;
+                    side_one_choice.crash = None;
+                    side_one_choice.status = None;
+                    side_one_choice.volatile_status = None;
+                }
+                if let Some(effect) = &z_move.status_effect {
+                    apply_z_status_effect(&mut side_one_choice, effect);
+                }
+            }
+            s1_z = true;
+        }
         MoveChoice::TeamPreview(_, _, _) => {
             panic!("Team preview should not be handled in generate_instructions_from_move_pair");
         }
@@ -4083,6 +4150,7 @@ pub fn generate_instructions_from_move_pair(
     let mut s2_replacing_fainted_pkmn = false;
     let mut s2_tera = false;
     let mut s2_mega = false;
+    let mut s2_z = false;
     match side_two_move {
         MoveChoice::Switch(switch_id) => {
             if state.side_two.get_active().hp == 0 {
@@ -4105,6 +4173,37 @@ pub fn generate_instructions_from_move_pair(
             side_two_choice = state.side_two.get_active().moves[move_index].choice.clone();
             side_two_choice.move_index = *move_index;
             s2_mega = true;
+        }
+        MoveChoice::MoveZ(move_index) => {
+            side_two_choice = state.side_two.get_active().moves[move_index].choice.clone();
+            side_two_choice.move_index = *move_index;
+            if let Some(z_move) = get_z_move_for(state.side_two.get_active(), &side_two_choice) {
+                side_two_choice.move_type = z_move.move_type;
+                side_two_choice.category = z_move.category;
+                side_two_choice.base_power = z_move.base_power;
+                side_two_choice.is_z_move = true;
+                side_two_choice.z_fixed_damage_fraction = z_move.fixed_damage_fraction;
+                side_two_choice.z_sets_psychic_terrain = matches!(
+                    z_move.terrain_effect,
+                    Some(super::z_moves::TerrainEffect::SetPsychic)
+                );
+                side_two_choice.z_clears_terrain = matches!(
+                    z_move.terrain_effect,
+                    Some(super::z_moves::TerrainEffect::Clear)
+                );
+                if !z_move.status {
+                    side_two_choice.secondaries = None;
+                    side_two_choice.drain = None;
+                    side_two_choice.recoil = None;
+                    side_two_choice.crash = None;
+                    side_two_choice.status = None;
+                    side_two_choice.volatile_status = None;
+                }
+                if let Some(effect) = &z_move.status_effect {
+                    apply_z_status_effect(&mut side_two_choice, effect);
+                }
+            }
+            s2_z = true;
         }
         MoveChoice::TeamPreview(_, _, _) => {
             panic!("Team preview should not be handled in generate_instructions_from_move_pair");
@@ -4195,6 +4294,57 @@ pub fn generate_instructions_from_move_pair(
                     side_ref: SideReference::SideTwo,
                 },
             ));
+    }
+
+    if s1_z {
+        state.side_one.z_move_used = true;
+        incoming_instructions
+            .instruction_list
+            .push(Instruction::ToggleZMoveUsed(
+                crate::instruction::ToggleZMoveUsedInstruction {
+                    side_ref: SideReference::SideOne,
+                },
+            ));
+    }
+    if s2_z {
+        state.side_two.z_move_used = true;
+        incoming_instructions
+            .instruction_list
+            .push(Instruction::ToggleZMoveUsed(
+                crate::instruction::ToggleZMoveUsedInstruction {
+                    side_ref: SideReference::SideTwo,
+                },
+            ));
+    }
+
+    if s1_z {
+        if let Some(effect) = get_z_move_for(state.side_one.get_active(), &side_one_choice)
+            .and_then(|z_move| z_move.status_effect)
+        {
+            if effect == ZStatusEffect::ClearNegativeBoosts {
+                state
+                    .side_one
+                    .reset_negative_boosts(SideReference::SideOne, &mut incoming_instructions);
+            }
+        }
+    }
+    if s2_z {
+        if let Some(effect) = get_z_move_for(state.side_two.get_active(), &side_two_choice)
+            .and_then(|z_move| z_move.status_effect)
+        {
+            if effect == ZStatusEffect::ClearNegativeBoosts {
+                state
+                    .side_two
+                    .reset_negative_boosts(SideReference::SideTwo, &mut incoming_instructions);
+            }
+        }
+    }
+
+    if s1_z {
+        ultra_burst(state, SideReference::SideOne, &mut incoming_instructions);
+    }
+    if s2_z {
+        ultra_burst(state, SideReference::SideTwo, &mut incoming_instructions);
     }
 
     run_mega_evolutions(state, s1_mega, s2_mega, &mut incoming_instructions);
@@ -4311,6 +4461,52 @@ pub fn generate_instructions_from_move_pair(
         }
     }
     state_instructions_vec
+}
+
+fn ultra_burst(state: &mut State, side_ref: SideReference, instructions: &mut StateInstructions) {
+    let side = state.get_side(&side_ref);
+    let active_pkmn = side.get_active();
+    let Some(target) = active_pkmn.id.ultra_burst_target(active_pkmn.item) else {
+        return;
+    };
+
+    instructions
+        .instruction_list
+        .push(Instruction::FormeChange(FormeChangeInstruction {
+            side_ref,
+            name_change: target.id as i16 - active_pkmn.id as i16,
+        }));
+    active_pkmn.id = target.id;
+    active_pkmn.recalculate_stats(&side_ref, instructions);
+
+    if target.ability != active_pkmn.ability {
+        instructions
+            .instruction_list
+            .push(Instruction::ChangeAbility(ChangeAbilityInstruction {
+                side_ref,
+                ability_change: target.ability as i16 - active_pkmn.ability as i16,
+            }));
+        active_pkmn.ability = target.ability;
+    }
+    if target.ability != active_pkmn.base_ability {
+        instructions
+            .instruction_list
+            .push(Instruction::ChangeBaseAbility(ChangeAbilityInstruction {
+                side_ref,
+                ability_change: target.ability as i16 - active_pkmn.base_ability as i16,
+            }));
+        active_pkmn.base_ability = target.ability;
+    }
+    if target.types != active_pkmn.types {
+        instructions.instruction_list.push(Instruction::ChangeType(
+            crate::instruction::ChangeType {
+                side_ref,
+                new_types: target.types,
+                old_types: active_pkmn.types,
+            },
+        ));
+        active_pkmn.types = target.types;
+    }
 }
 
 fn get_instructions_from_pursuit_hitting_switching_target(

@@ -533,6 +533,8 @@ impl Default for Side {
             damage_dealt: DamageDealt::default(),
             switch_out_move_second_saved_move: Choices::NONE,
             evasion_boost: 0,
+            allow_z_moves: false,
+            z_move_used: false,
         }
     }
 }
@@ -1077,8 +1079,13 @@ pub struct Side {
     pub last_used_move: LastUsedMove,
     pub damage_dealt: DamageDealt,
     pub switch_out_move_second_saved_move: Choices,
+    pub allow_z_moves: bool,
+    pub z_move_used: bool,
 }
 impl Side {
+    pub fn can_use_z_move(&self) -> bool {
+        self.allow_z_moves && !self.z_move_used
+    }
     fn io_conditional_print(&self) -> String {
         let mut output = String::new();
         if self.baton_passing {
@@ -1155,7 +1162,7 @@ impl Side {
             remaining &= remaining - 1;
         }
         format!(
-            "{}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}",
+            "{}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}={}",
             self.pokemon.pkmn[0].serialize(),
             self.pokemon.pkmn[1].serialize(),
             self.pokemon.pkmn[2].serialize(),
@@ -1185,6 +1192,8 @@ impl Side {
             self.force_trapped,
             self.last_used_move.serialize(),
             self.slow_uturn_move,
+            self.allow_z_moves,
+            self.z_move_used,
         )
     }
     pub fn deserialize(serialized: &str) -> Side {
@@ -1235,6 +1244,8 @@ impl Side {
             last_used_move: LastUsedMove::deserialize(split[27]),
             damage_dealt: DamageDealt::default(),
             slow_uturn_move: split[28].parse::<bool>().unwrap(),
+            allow_z_moves: split.get(29).unwrap_or(&"false").parse::<bool>().unwrap(),
+            z_move_used: split.get(30).unwrap_or(&"false").parse::<bool>().unwrap(),
         }
     }
 }
@@ -1953,6 +1964,9 @@ impl State {
                 SideReference::SideOne => self.side_one.get_active().mega_evolved ^= true,
                 SideReference::SideTwo => self.side_two.get_active().mega_evolved ^= true,
             },
+            Instruction::ToggleZMoveUsed(instruction) => {
+                self.get_side(&instruction.side_ref).z_move_used ^= true;
+            }
             Instruction::SetLastUsedMove(instruction) => {
                 self.set_last_used_move(&instruction.side_ref, instruction.last_used_move)
             }
@@ -2155,6 +2169,9 @@ impl State {
                 SideReference::SideOne => self.side_one.get_active().mega_evolved ^= true,
                 SideReference::SideTwo => self.side_two.get_active().mega_evolved ^= true,
             },
+            Instruction::ToggleZMoveUsed(instruction) => {
+                self.get_side(&instruction.side_ref).z_move_used ^= true;
+            }
             Instruction::SetLastUsedMove(instruction) => {
                 self.set_last_used_move(&instruction.side_ref, instruction.previous_last_used_move)
             }

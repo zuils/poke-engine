@@ -91,6 +91,7 @@ pub enum Instruction {
     ToggleSideTwoForceSwitch,
     ToggleTerastallized(ToggleTerastallizedInstruction),
     ToggleMegaEvolved(ToggleMegaEvolvedInstruction),
+    ToggleZMoveUsed(ToggleZMoveUsedInstruction),
     TeamPreviewFaintIndex(SideReference, PokemonIndex),
     ToggleTeamPreview,
 }
@@ -295,6 +296,9 @@ impl fmt::Debug for Instruction {
             }
             Instruction::ToggleMegaEvolved(s) => {
                 write!(f, "ToggleMegaEvolved {:?}", s.side_ref)
+            }
+            Instruction::ToggleZMoveUsed(s) => {
+                write!(f, "ToggleZMoveUsed {:?}", s.side_ref)
             }
             Instruction::SetLastUsedMove(s) => {
                 write!(
@@ -575,6 +579,11 @@ pub struct ToggleMegaEvolvedInstruction {
     pub side_ref: SideReference,
 }
 
+#[derive(PartialEq, Clone)]
+pub struct ToggleZMoveUsedInstruction {
+    pub side_ref: SideReference,
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct ChangeType {
     pub side_ref: SideReference,
@@ -598,7 +607,7 @@ mod test {
     // Make sure that the size of the Instruction enum doesn't change
     #[test]
     fn test_instruction_size() {
-        assert_eq!(size_of::<Instruction>(), 6);
+        assert_eq!(size_of::<Instruction>(), 8);
         assert_eq!(align_of::<Instruction>(), 2);
     }
 }

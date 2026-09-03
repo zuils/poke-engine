@@ -20,7 +20,7 @@ use std::cmp;
 use super::state::PokemonVolatileStatus;
 
 define_enum_with_from_str! {
-    #[repr(u8)]
+    #[repr(u16)]
     #[derive(Debug, PartialEq, Clone, Copy)]
     Items {
         NONE,
@@ -268,6 +268,43 @@ define_enum_with_from_str! {
         FALINKSITE,
         RAICHUNITEX,
         RAICHUNITEY,
+
+        // z-moves
+        NORMALIUMZ,
+        FIGHTINIUMZ,
+        FLYINIUMZ,
+        POISONIUMZ,
+        GROUNDIUMZ,
+        ROCKIUMZ,
+        BUGINIUMZ,
+        GHOSTIUMZ,
+        STEELIUMZ,
+        FIRIUMZ,
+        WATERIUMZ,
+        GRASSIUMZ,
+        ELECTRIUMZ,
+        PSYCHIUMZ,
+        ICIUMZ,
+        DRAGONIUMZ,
+        DARKINIUMZ,
+        FAIRIUMZ,
+        PIKANIUMZ,
+        DECIDIUMZ,
+        INCINIUMZ,
+        PRIMARIUMZ,
+        TAPUNIUMZ,
+        MARSHADIUMZ,
+        ALORAICHIUMZ,
+        SNORLIUMZ,
+        EEVIUMZ,
+        MEWNIUMZ,
+        PIKASHUNIUMZ,
+        ULTRANECROZIUMZ,
+        SOLGANIUMZ,
+        LUNAIUMZ,
+        MIMIKIUMZ,
+        LYCANIUMZ,
+        KOMMONIUMZ,
     },
     default = UNKNOWNITEM
 }

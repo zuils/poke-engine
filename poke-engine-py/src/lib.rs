@@ -174,6 +174,8 @@ pub struct PySide {
     evasion_boost: i8,
     last_used_move: String,
     switch_out_move_second_saved_move: String,
+    allow_z_moves: bool,
+    z_move_used: bool,
 }
 
 impl From<Side> for PySide {
@@ -212,6 +214,8 @@ impl From<Side> for PySide {
             evasion_boost: other.evasion_boost,
             last_used_move: other.last_used_move.serialize(),
             switch_out_move_second_saved_move: other.switch_out_move_second_saved_move.to_string(),
+            allow_z_moves: other.allow_z_moves,
+            z_move_used: other.z_move_used,
         }
     }
 }
@@ -265,6 +269,8 @@ impl Into<Side> for PySide {
                 &self.switch_out_move_second_saved_move,
             )
             .unwrap(),
+            allow_z_moves: self.allow_z_moves,
+            z_move_used: self.z_move_used,
         }
     }
 }
@@ -295,6 +301,8 @@ impl PySide {
         evasion_boost=0,
         last_used_move="move:none".to_string(),
         switch_out_move_second_saved_move="none".to_string(),
+        allow_z_moves=false,
+        z_move_used=false,
     ))]
     fn new(
         mut pokemon: Vec<PyPokemon>,
@@ -320,6 +328,8 @@ impl PySide {
         evasion_boost: i8,
         last_used_move: String,
         switch_out_move_second_saved_move: String,
+        allow_z_moves: bool,
+        z_move_used: bool,
     ) -> Self {
         while pokemon.len() < 6 {
             pokemon.push(PyPokemon::create_fainted());
@@ -354,6 +364,8 @@ impl PySide {
             evasion_boost,
             last_used_move,
             switch_out_move_second_saved_move,
+            allow_z_moves,
+            z_move_used,
         }
     }
 }

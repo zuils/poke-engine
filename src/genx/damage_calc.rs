@@ -576,6 +576,15 @@ pub fn calculate_damage(
     choice: &Choice,
     _damage_rolls: DamageRolls,
 ) -> Option<(i16, i16)> {
+    if let Some(fraction) = choice.z_fixed_damage_fraction {
+        let (_, defending_side) = state.get_both_sides_immutable(attacking_side);
+        let defender = defending_side.get_active_immutable();
+        if type_effectiveness_modifier(&choice.move_type, defender) == 0.0 {
+            return Some((0, 0));
+        }
+        let damage = (defender.hp as f32 * fraction) as i16;
+        return Some((damage, damage));
+    }
     if choice.category == MoveCategory::Status || choice.category == MoveCategory::Switch {
         return None;
     } else if choice.base_power == 0.0 {

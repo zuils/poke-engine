@@ -11,6 +11,23 @@ pub struct MegaEvolveData {
 }
 
 impl PokemonName {
+    pub fn ultra_burst_target(&self, item: Items) -> Option<MegaEvolveData> {
+        if item != Items::ULTRANECROZIUMZ {
+            return None;
+        }
+        match self {
+            PokemonName::NECROZMA
+            | PokemonName::NECROZMADUSKMANE
+            | PokemonName::NECROZMADAWNWINGS => Some(MegaEvolveData {
+                id: PokemonName::NECROZMAULTRA,
+                types: (PokemonType::PSYCHIC, PokemonType::DRAGON),
+                ability: Abilities::NEUROFORCE,
+                base_stats: (97, 167, 97, 167, 97, 129),
+            }),
+            _ => None,
+        }
+    }
+
     /*
     Base Stats are only required to re-calculate stats when a pokemon changes forme
     so not every pokemon will be here
@@ -111,6 +128,7 @@ impl PokemonName {
             PokemonName::FALINKSMEGA => (65, 135, 135, 70, 65, 100),
             PokemonName::RAICHUMEGAX => (60, 135, 95, 90, 95, 110),
             PokemonName::RAICHUMEGAY => (60, 100, 55, 160, 80, 130),
+            PokemonName::NECROZMAULTRA => (97, 167, 97, 167, 97, 129),
             _ => panic!("Base stats not implemented for {}", self),
         }
     }
