@@ -70,10 +70,10 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::KINGSSHIELD
         | Choices::LEECHSEED
         | Choices::NASTYPLOT
+        | Choices::PERISHSONG
         | Choices::PROTECT
         | Choices::QUIVERDANCE
         | Choices::RECOVER
-        | Choices::REST
         | Choices::ROOST
         | Choices::SHELLSMASH
         | Choices::SLACKOFF
@@ -83,25 +83,36 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::SWORDSDANCE
         | Choices::TAILGLOW => ZStatusEffect::ClearNegativeBoosts,
         Choices::BELLYDRUM
+        | Choices::HAPPYHOUR
         | Choices::AROMATHERAPY
         | Choices::CONVERSION2
+        | Choices::HEALORDER
+        | Choices::HEALPULSE
         | Choices::HAZE
         | Choices::HEALBELL
-        | Choices::MIST
+        | Choices::INGRAIN
+        | Choices::MILKDRINK
+        | Choices::MOONLIGHT
+        | Choices::MORNINGSUN
+        | Choices::PAINSPLIT
         | Choices::PSYCHUP
         | Choices::REFRESH
         | Choices::STOCKPILE
         | Choices::TELEPORT
         | Choices::TRANSFORM => ZStatusEffect::Heal,
-        Choices::BULKUP | Choices::HOWL | Choices::LASERFOCUS | Choices::WORKUP => {
-            ZStatusEffect::Boost(boosts(1, 0, 0, 0, 0, 0))
+        Choices::BESTOW | Choices::HONECLAWS | Choices::MEDITATE | Choices::SHARPEN => {
+            ZStatusEffect::Boost(boosts(0, 0, 1, 1, 0, 0))
         }
         Choices::SPLASH => ZStatusEffect::Boost(boosts(3, 0, 0, 0, 0, 0)),
         Choices::AROMATICMIST
         | Choices::CAPTIVATE
         | Choices::IMPRISON
         | Choices::MAGICCOAT
-        | Choices::POWDER => ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)),
+        | Choices::POWDER
+        | Choices::AURORAVEIL
+        | Choices::MAGICROOM
+        | Choices::MAGNETICFLUX
+        | Choices::MAGNETRISE => ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)),
         Choices::HEALBLOCK | Choices::PSYCHOSHIFT => ZStatusEffect::Boost(boosts(0, 0, 2, 0, 0, 0)),
         Choices::CELEBRATE
         | Choices::CONVERSION
@@ -110,21 +121,24 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::PURIFY
         | Choices::SKETCH
         | Choices::TRICKORTREAT => ZStatusEffect::Boost(boosts(1, 1, 1, 1, 1, 0)),
+        Choices::COSMICPOWER => ZStatusEffect::Boost(boosts(0, 1, 0, 1, 0, 0)),
         Choices::ELECTRICTERRAIN
+        | Choices::FLOWERSHIELD
         | Choices::GEARUP
         | Choices::GROWTH
         | Choices::INSTRUCT
         | Choices::IONDELUGE
         | Choices::MIRACLEEYE
+        | Choices::PLAYNICE
         | Choices::PSYCHICTERRAIN
         | Choices::SOAK
-        | Choices::TELEKINESIS => ZStatusEffect::Boost(boosts(0, 0, 1, 0, 0, 0)),
+        | Choices::TELEKINESIS
+        | Choices::CURSE => ZStatusEffect::Boost(boosts(0, 0, 1, 0, 0, 0)),
         Choices::AQUARING
         | Choices::BANEFULBUNKER
         | Choices::BLOCK
         | Choices::CHARM
         | Choices::DEFENDORDER
-        | Choices::FAIRYLOCK
         | Choices::FEATHERDANCE
         | Choices::GRASSYTERRAIN
         | Choices::HARDEN
@@ -141,20 +155,15 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::TOXICSPIKES
         | Choices::WIDEGUARD
         | Choices::WITHDRAW => ZStatusEffect::Boost(boosts(0, 1, 0, 0, 0, 0)),
-        Choices::ACUPRESSURE
-        | Choices::FORESIGHT
-        | Choices::HEARTSWAP
-        | Choices::SLEEPTALK
-        | Choices::TAILWIND => ZStatusEffect::CritRatio,
+        Choices::ACUPRESSURE | Choices::HEARTSWAP | Choices::SLEEPTALK | Choices::TAILWIND => {
+            ZStatusEffect::CritRatio
+        }
         Choices::FOCUSENERGY
         | Choices::COPYCAT
         | Choices::DEFENSECURL
-        | Choices::DEFOG
-        | Choices::SWEETSCENT => ZStatusEffect::Boost(boosts(0, 0, 0, 0, 0, 1)),
-        Choices::AFTERYOU
-        | Choices::AURORAVEIL
-        | Choices::BESTOW
-        | Choices::ENCORE
+        | Choices::SWEETSCENT
+        | Choices::FORESIGHT => ZStatusEffect::Boost(boosts(0, 0, 0, 0, 0, 1)),
+        Choices::ENCORE
         | Choices::GRASSWHISTLE
         | Choices::LOCKON
         | Choices::LOVELYKISS
@@ -168,6 +177,21 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::TOXICTHREAD
         | Choices::WORRYSEED
         | Choices::YAWN => ZStatusEffect::Boost(boosts(0, 0, 0, 0, 1, 0)),
+        // Sp. Def +2
+        Choices::MEANLOOK
+        | Choices::MUDSPORT
+        | Choices::NIGHTMARE
+        | Choices::FORESTSCURSE
+        | Choices::LUCKYCHANT
+        | Choices::NATUREPOWER => ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)),
+        // Def +2
+        Choices::POWERTRICK | Choices::GUARDSPLIT | Choices::GUARDSWAP => {
+            ZStatusEffect::Boost(boosts(0, 2, 0, 0, 0, 0))
+        }
+        // Sp. Atk +2
+        Choices::POWERSPLIT | Choices::POWERSWAP => ZStatusEffect::Boost(boosts(0, 0, 2, 0, 0, 0)),
+        // Atk +2
+        Choices::MIMIC => ZStatusEffect::Boost(boosts(2, 0, 0, 0, 0, 0)),
         Choices::CHARGE
         | Choices::CONFIDE
         | Choices::CRAFTYSHIELD
@@ -175,12 +199,21 @@ pub fn get_z_status_effect(move_id: Choices) -> Option<ZStatusEffect> {
         | Choices::FLATTER
         | Choices::GLARE
         | Choices::LIGHTSCREEN
-        | Choices::MAGICROOM
         | Choices::MISTYTERRAIN
         | Choices::SPOTLIGHT
         | Choices::THUNDERWAVE
         | Choices::WATERSPORT
         | Choices::WHIRLWIND => ZStatusEffect::Boost(boosts(0, 0, 0, 1, 0, 0)),
+        // Accuracy +2
+        Choices::MINDREADER | Choices::ODORSLEUTH => ZStatusEffect::Boost(boosts(0, 0, 0, 0, 0, 2)),
+        // Atk +1 and Sp. Atk +1
+        Choices::NOBLEROAR => ZStatusEffect::Boost(boosts(1, 0, 1, 0, 0, 0)),
+        // Speed +2
+        Choices::ENTRAINMENT
+        | Choices::MEFIRST
+        | Choices::MIRRORMOVE
+        | Choices::RAPIDSPIN
+        | Choices::ROCKPOLISH => ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)),
         _ => return None,
     };
     Some(effect)
@@ -229,48 +262,46 @@ pub fn get_z_move_base_power(base_power: f32) -> f32 {
 fn override_z_move_base_power(move_id: Choices, base_power: f32) -> f32 {
     match move_id {
         Choices::VCREATE => 220.0,
-        Choices::WRINGOUT => 190.0,
-        Choices::CRUSHGRIP => 190.0,
+        Choices::WRINGOUT | Choices::CRUSHGRIP => 190.0,
         Choices::LANDSWRATH => 185.0,
-        Choices::THOUSANDARROWS => 180.0,
-        Choices::SHEERCOLD => 180.0,
-        Choices::HORNDRILL => 180.0,
-        Choices::GUILLOTINE => 180.0,
-        Choices::GEARGRIND => 180.0,
-        Choices::FISSURE => 180.0,
-        Choices::FINALGAMBIT => 180.0,
+        Choices::THOUSANDARROWS
+        | Choices::SHEERCOLD
+        | Choices::HORNDRILL
+        | Choices::GUILLOTINE
+        | Choices::GEARGRIND
+        | Choices::FISSURE
+        | Choices::FINALGAMBIT => 180.0,
         Choices::FLYINGPRESS => 170.0,
-        Choices::WEATHERBALL => 160.0,
-        Choices::TRUMPCARD => 160.0,
-        Choices::STOREDPOWER => 160.0,
-        Choices::REVERSAL => 160.0,
-        Choices::RETURN => 160.0,
-        Choices::PUNISHMENT => 160.0,
-        Choices::POWERTRIP => 160.0,
-        Choices::NATURALGIFT => 160.0,
-        Choices::LOWKICK => 160.0,
-        Choices::HEX => 160.0,
-        Choices::HEAVYSLAM => 160.0,
-        Choices::HEATCRASH => 160.0,
-        Choices::GYROBALL => 160.0,
-        Choices::GRASSKNOT => 160.0,
-        Choices::FRUSTRATION => 160.0,
-        Choices::FLAIL => 160.0,
-        Choices::ENDEAVOR => 160.0,
-        Choices::ELECTROBALL => 160.0,
-        Choices::TAILSLAP => 140.0,
-        Choices::ROCKBLAST => 140.0,
-        Choices::PINMISSILE => 140.0,
-        Choices::MISTBALL => 140.0,
-        Choices::MAGNITUDE => 140.0,
-        Choices::LUSTERPURGE => 140.0,
-        Choices::ICICLESPEAR => 140.0,
-        Choices::DOUBLEHIT => 140.0,
-        Choices::COREENFORCER => 140.0,
-        Choices::BULLETSEED => 140.0,
-        Choices::BONERUSH => 140.0,
-        Choices::TRIPLEKICK => 120.0,
-        Choices::MEGADRAIN => 120.0,
+        Choices::WEATHERBALL
+        | Choices::TRUMPCARD
+        | Choices::STOREDPOWER
+        | Choices::REVERSAL
+        | Choices::RETURN
+        | Choices::PUNISHMENT
+        | Choices::POWERTRIP
+        | Choices::NATURALGIFT
+        | Choices::LOWKICK
+        | Choices::HEX
+        | Choices::HEAVYSLAM
+        | Choices::HEATCRASH
+        | Choices::GYROBALL
+        | Choices::GRASSKNOT
+        | Choices::FRUSTRATION
+        | Choices::FLAIL
+        | Choices::ENDEAVOR
+        | Choices::ELECTROBALL => 160.0,
+        Choices::TAILSLAP
+        | Choices::ROCKBLAST
+        | Choices::PINMISSILE
+        | Choices::MISTBALL
+        | Choices::MAGNITUDE
+        | Choices::LUSTERPURGE
+        | Choices::ICICLESPEAR
+        | Choices::DOUBLEHIT
+        | Choices::COREENFORCER
+        | Choices::BULLETSEED
+        | Choices::BONERUSH => 140.0,
+        Choices::TRIPLEKICK | Choices::MEGADRAIN => 120.0,
         _ => base_power,
     }
 }
@@ -317,15 +348,17 @@ fn signature(pokemon: PokemonName, move_id: Choices, item: Items) -> Option<ZMov
         (PokemonName::PIKACHU, Choices::VOLTTACKLE, Items::PIKANIUMZ) => {
             ("Catastropika", MoveCategory::Physical, 210.0)
         }
-        (PokemonName::PIKACHUORIGINAL, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUHOENN, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUSINNOH, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUUNOVA, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUKALOS, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUALOLA, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ)
-        | (PokemonName::PIKACHUPARTNER, Choices::THUNDERBOLT, Items::PIKASHUNIUMZ) => {
-            ("10,000,000 Volt Thunderbolt", MoveCategory::Special, 195.0)
-        }
+        (
+            PokemonName::PIKACHUORIGINAL
+            | PokemonName::PIKACHUHOENN
+            | PokemonName::PIKACHUSINNOH
+            | PokemonName::PIKACHUUNOVA
+            | PokemonName::PIKACHUKALOS
+            | PokemonName::PIKACHUALOLA
+            | PokemonName::PIKACHUPARTNER,
+            Choices::THUNDERBOLT,
+            Items::PIKASHUNIUMZ,
+        ) => ("10,000,000 Volt Thunderbolt", MoveCategory::Special, 195.0),
         (PokemonName::DECIDUEYE, Choices::SPIRITSHACKLE, Items::DECIDIUMZ) => {
             ("Sinister Arrow Raid", MoveCategory::Physical, 180.0)
         }
@@ -350,20 +383,17 @@ fn signature(pokemon: PokemonName, move_id: Choices, item: Items) -> Option<ZMov
         (PokemonName::EEVEE, Choices::LASTRESORT, Items::EEVIUMZ) => {
             ("Extreme Evoboost", MoveCategory::Status, 0.0)
         }
-        (PokemonName::TAPUKOKO, Choices::NATURESMADNESS, Items::TAPUNIUMZ)
-        | (PokemonName::TAPULELE, Choices::NATURESMADNESS, Items::TAPUNIUMZ)
-        | (PokemonName::TAPUBULU, Choices::NATURESMADNESS, Items::TAPUNIUMZ)
-        | (PokemonName::TAPUFINI, Choices::NATURESMADNESS, Items::TAPUNIUMZ) => {
-            ("Guardian of Alola", MoveCategory::Special, 0.0)
-        }
         (
-            PokemonName::NECROZMA
-            | PokemonName::NECROZMADUSKMANE
-            | PokemonName::NECROZMADAWNWINGS
-            | PokemonName::NECROZMAULTRA,
-            Choices::PHOTONGEYSER,
-            Items::ULTRANECROZIUMZ,
-        ) => ("Light That Burns the Sky", MoveCategory::Special, 200.0),
+            PokemonName::TAPUKOKO
+            | PokemonName::TAPULELE
+            | PokemonName::TAPUBULU
+            | PokemonName::TAPUFINI,
+            Choices::NATURESMADNESS,
+            Items::TAPUNIUMZ,
+        ) => ("Guardian of Alola", MoveCategory::Special, 0.0),
+        (PokemonName::NECROZMAULTRA, Choices::PHOTONGEYSER, Items::ULTRANECROZIUMZ) => {
+            ("Light That Burns the Sky", MoveCategory::Special, 200.0)
+        }
         (PokemonName::SOLGALEO, Choices::SUNSTEELSTRIKE, Items::SOLGANIUMZ) => {
             ("Searing Sunraze Smash", MoveCategory::Physical, 200.0)
         }
@@ -465,12 +495,13 @@ pub fn get_z_move_for(pokemon: &Pokemon, base_move: &Choice) -> Option<ZMove> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::items::Items;
     use super::{
-        apply_z_status_effect, get_z_move_base_power, get_z_move_for, get_z_status_effect,
-        override_z_move_base_power, Items, ZStatusEffect,
+        apply_z_status_effect, boosts, get_z_move_base_power, get_z_move_for, get_z_status_effect,
+        override_z_move_base_power, Choices, MoveCategory, TerrainEffect, ZStatusEffect,
     };
-    use crate::choices::Choices;
     use crate::pokemon::PokemonName;
+    use crate::state::Pokemon;
 
     #[test]
     fn uses_gen7_base_power_breakpoints() {
@@ -516,6 +547,108 @@ mod tests {
         assert_eq!(choice.z_crit_ratio, 1);
     }
 
+    #[test]
+    fn maps_additional_status_z_power_effects() {
+        // Sp. Def +2
+        assert_eq!(
+            get_z_status_effect(Choices::MEANLOOK),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::MUDSPORT),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::NIGHTMARE),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::FORESTSCURSE),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::LUCKYCHANT),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::NATUREPOWER),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 2, 0, 0)))
+        );
+
+        // Def +2
+        assert_eq!(
+            get_z_status_effect(Choices::POWERTRICK),
+            Some(ZStatusEffect::Boost(boosts(0, 2, 0, 0, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::GUARDSPLIT),
+            Some(ZStatusEffect::Boost(boosts(0, 2, 0, 0, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::GUARDSWAP),
+            Some(ZStatusEffect::Boost(boosts(0, 2, 0, 0, 0, 0)))
+        );
+
+        // Sp. Atk +2
+        assert_eq!(
+            get_z_status_effect(Choices::POWERSPLIT),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 2, 0, 0, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::POWERSWAP),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 2, 0, 0, 0)))
+        );
+
+        // Atk +2
+        assert_eq!(
+            get_z_status_effect(Choices::MIMIC),
+            Some(ZStatusEffect::Boost(boosts(2, 0, 0, 0, 0, 0)))
+        );
+
+        // Accuracy +2
+        assert_eq!(
+            get_z_status_effect(Choices::MINDREADER),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 0, 2)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::ODORSLEUTH),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 0, 2)))
+        );
+
+        // Atk +1 and Sp. Atk +1
+        assert_eq!(
+            get_z_status_effect(Choices::NOBLEROAR),
+            Some(ZStatusEffect::Boost(boosts(1, 0, 1, 0, 0, 0)))
+        );
+
+        // Heal
+        assert_eq!(
+            get_z_status_effect(Choices::HAPPYHOUR),
+            Some(ZStatusEffect::Heal)
+        );
+
+        // Speed +2
+        assert_eq!(
+            get_z_status_effect(Choices::ENTRAINMENT),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::MEFIRST),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::MIRRORMOVE),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::RAPIDSPIN),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)))
+        );
+        assert_eq!(
+            get_z_status_effect(Choices::ROCKPOLISH),
+            Some(ZStatusEffect::Boost(boosts(0, 0, 0, 0, 2, 0)))
+        );
+    }
     #[test]
     fn generic_status_moves_require_matching_crystal_type() {
         use crate::choices::MOVES;
@@ -653,6 +786,7 @@ mod tests {
             let mut choice = base_move.clone();
             choice.move_type = z_move.move_type;
             choice.category = z_move.category;
+            choice.base_power = z_move.base_power;
             choice.z_fixed_damage_fraction = z_move.fixed_damage_fraction;
             let damage =
                 calculate_damage(&state, &SideReference::SideOne, &choice, DamageRolls::Max)
@@ -742,6 +876,487 @@ mod tests {
             state.reverse_instructions(&branches[0].instruction_list);
             assert_eq!(state.terrain.terrain_type, Terrain::ELECTRICTERRAIN);
             assert_eq!(state.terrain.turns_remaining, 3);
+        }
+    }
+
+    #[test]
+    fn test_all_signature_z_moves() {
+        let test_cases = [
+            // (pokemon, move, item, expected_name, expected_category, expected_power, expected_status, expected_status_effect, expected_fixed_damage_fraction, expected_terrain_effect)
+            (
+                PokemonName::PIKACHU,
+                Choices::VOLTTACKLE,
+                Items::PIKANIUMZ,
+                "Catastropika",
+                MoveCategory::Physical,
+                210.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUORIGINAL,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUHOENN,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUSINNOH,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUUNOVA,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUKALOS,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUALOLA,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PIKACHUPARTNER,
+                Choices::THUNDERBOLT,
+                Items::PIKASHUNIUMZ,
+                "10,000,000 Volt Thunderbolt",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::DECIDUEYE,
+                Choices::SPIRITSHACKLE,
+                Items::DECIDIUMZ,
+                "Sinister Arrow Raid",
+                MoveCategory::Physical,
+                180.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::INCINEROAR,
+                Choices::DARKESTLARIAT,
+                Items::INCINIUMZ,
+                "Malicious Moonsault",
+                MoveCategory::Physical,
+                180.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::PRIMARINA,
+                Choices::SPARKLINGARIA,
+                Items::PRIMARIUMZ,
+                "Oceanic Operetta",
+                MoveCategory::Special,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MARSHADOW,
+                Choices::SPECTRALTHIEF,
+                Items::MARSHADIUMZ,
+                "Soul-Stealing 7-Star Strike",
+                MoveCategory::Physical,
+                195.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::RAICHUALOLA,
+                Choices::THUNDERBOLT,
+                Items::ALORAICHIUMZ,
+                "Stoked Sparksurfer",
+                MoveCategory::Special,
+                175.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::SNORLAX,
+                Choices::GIGAIMPACT,
+                Items::SNORLIUMZ,
+                "Pulverizing Pancake",
+                MoveCategory::Physical,
+                210.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MEW,
+                Choices::PSYCHIC,
+                Items::MEWNIUMZ,
+                "Genesis Supernova",
+                MoveCategory::Special,
+                185.0,
+                false,
+                None,
+                None,
+                Some(TerrainEffect::SetPsychic),
+            ),
+            (
+                PokemonName::EEVEE,
+                Choices::LASTRESORT,
+                Items::EEVIUMZ,
+                "Extreme Evoboost",
+                MoveCategory::Status,
+                0.0,
+                true,
+                Some(ZStatusEffect::Boost(boosts(2, 2, 2, 2, 2, 0))),
+                None,
+                None,
+            ),
+            (
+                PokemonName::TAPUKOKO,
+                Choices::NATURESMADNESS,
+                Items::TAPUNIUMZ,
+                "Guardian of Alola",
+                MoveCategory::Special,
+                0.0,
+                false,
+                None,
+                Some(0.75),
+                None,
+            ),
+            (
+                PokemonName::TAPULELE,
+                Choices::NATURESMADNESS,
+                Items::TAPUNIUMZ,
+                "Guardian of Alola",
+                MoveCategory::Special,
+                0.0,
+                false,
+                None,
+                Some(0.75),
+                None,
+            ),
+            (
+                PokemonName::TAPUBULU,
+                Choices::NATURESMADNESS,
+                Items::TAPUNIUMZ,
+                "Guardian of Alola",
+                MoveCategory::Special,
+                0.0,
+                false,
+                None,
+                Some(0.75),
+                None,
+            ),
+            (
+                PokemonName::TAPUFINI,
+                Choices::NATURESMADNESS,
+                Items::TAPUNIUMZ,
+                "Guardian of Alola",
+                MoveCategory::Special,
+                0.0,
+                false,
+                None,
+                Some(0.75),
+                None,
+            ),
+            (
+                PokemonName::NECROZMAULTRA,
+                Choices::PHOTONGEYSER,
+                Items::ULTRANECROZIUMZ,
+                "Light That Burns the Sky",
+                MoveCategory::Special,
+                200.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::SOLGALEO,
+                Choices::SUNSTEELSTRIKE,
+                Items::SOLGANIUMZ,
+                "Searing Sunraze Smash",
+                MoveCategory::Physical,
+                200.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::LUNALA,
+                Choices::MOONGEISTBEAM,
+                Items::LUNAIUMZ,
+                "Menacing Moonraze Maelstrom",
+                MoveCategory::Special,
+                200.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::NECROZMADUSKMANE,
+                Choices::SUNSTEELSTRIKE,
+                Items::SOLGANIUMZ,
+                "Searing Sunraze Smash",
+                MoveCategory::Physical,
+                200.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::NECROZMADAWNWINGS,
+                Choices::MOONGEISTBEAM,
+                Items::LUNAIUMZ,
+                "Menacing Moonraze Maelstrom",
+                MoveCategory::Special,
+                200.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MIMIKYU,
+                Choices::PLAYROUGH,
+                Items::MIMIKIUMZ,
+                "Let's Snuggle Forever",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MIMIKYUBUSTED,
+                Choices::PLAYROUGH,
+                Items::MIMIKIUMZ,
+                "Let's Snuggle Forever",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MIMIKYUTOTEM,
+                Choices::PLAYROUGH,
+                Items::MIMIKIUMZ,
+                "Let's Snuggle Forever",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::MIMIKYUBUSTEDTOTEM,
+                Choices::PLAYROUGH,
+                Items::MIMIKIUMZ,
+                "Let's Snuggle Forever",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::LYCANROC,
+                Choices::STONEEDGE,
+                Items::LYCANIUMZ,
+                "Splintered Stormshards",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                Some(TerrainEffect::Clear),
+            ),
+            (
+                PokemonName::LYCANROCMIDNIGHT,
+                Choices::STONEEDGE,
+                Items::LYCANIUMZ,
+                "Splintered Stormshards",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                Some(TerrainEffect::Clear),
+            ),
+            (
+                PokemonName::LYCANROCDUSK,
+                Choices::STONEEDGE,
+                Items::LYCANIUMZ,
+                "Splintered Stormshards",
+                MoveCategory::Physical,
+                190.0,
+                false,
+                None,
+                None,
+                Some(TerrainEffect::Clear),
+            ),
+            (
+                PokemonName::KOMMOO,
+                Choices::CLANGINGSCALES,
+                Items::KOMMONIUMZ,
+                "Clangorous Soulblaze",
+                MoveCategory::Special,
+                185.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+            (
+                PokemonName::KOMMOOTOTEM,
+                Choices::CLANGINGSCALES,
+                Items::KOMMONIUMZ,
+                "Clangorous Soulblaze",
+                MoveCategory::Special,
+                185.0,
+                false,
+                None,
+                None,
+                None,
+            ),
+        ];
+
+        for (
+            test_pokemon,
+            move_id,
+            item,
+            expected_name,
+            expected_category,
+            expected_power,
+            expected_status,
+            expected_status_effect,
+            expected_fixed_damage_fraction,
+            expected_terrain_effect,
+        ) in test_cases.iter()
+        {
+            let mut pokemon = Pokemon::default();
+            pokemon.id = *test_pokemon;
+            pokemon.item = *item;
+            let base_move = crate::choices::MOVES.get(move_id).expect("Move not found");
+            let z_move = get_z_move_for(&pokemon, base_move)
+                .expect("Failed to get Z-Move for valid combination");
+
+            assert_eq!(
+                z_move.name, *expected_name,
+                "Failed for {:?} {} {:?}",
+                test_pokemon, move_id, item
+            );
+            assert_eq!(
+                z_move.category, *expected_category,
+                "Failed for {:?} {} {:?}",
+                test_pokemon, move_id, item
+            );
+            assert_eq!(
+                z_move.base_power, *expected_power,
+                "Failed for {:?} {} {:?}",
+                test_pokemon, move_id, item
+            );
+            assert_eq!(
+                z_move.status, *expected_status,
+                "Failed for {:?} {} {:?}",
+                test_pokemon, move_id, item
+            );
+            assert_eq!(
+                z_move.status_effect.as_ref(),
+                expected_status_effect.as_ref(),
+                "Failed for {:?} {} {:?}",
+                test_pokemon,
+                move_id,
+                item
+            );
+            assert_eq!(
+                z_move.fixed_damage_fraction.as_ref(),
+                expected_fixed_damage_fraction.as_ref(),
+                "Failed for {:?} {} {:?}",
+                test_pokemon,
+                move_id,
+                item
+            );
+            assert_eq!(
+                z_move.terrain_effect.as_ref(),
+                expected_terrain_effect.as_ref(),
+                "Failed for {:?} {} {:?}",
+                test_pokemon,
+                move_id,
+                item
+            );
         }
     }
 }
