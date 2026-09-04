@@ -2,6 +2,7 @@
 /target
 .idea/
 .vscode
+.venv
 *.so
 **__pycache**
 poke-engine-py/docs/build/
