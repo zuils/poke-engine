@@ -13,4 +13,18 @@ pyo3 = { version = "0.29.0", features = ["extension-module"] }
 poke-engine = { path = "../" }
 
 [features]
-default = ["poke-engine/gen4"]
+default = ["gen4"]
+remove_low_chance_instructions = ["poke-engine/remove_low_chance_instructions"]
+gen1 = ["poke-engine/gen1"]
+gen2 = ["poke-engine/gen2"]
+gen3 = ["poke-engine/gen3"]
+gen4 = ["poke-engine/gen4"]
+gen5 = ["poke-engine/gen5"]
+gen6 = ["poke-engine/gen6"]
+gen7 = ["poke-engine/gen7"]
+gen8 = ["poke-engine/gen8"]
+gen9 = ["poke-engine/gen9"]
+champions = ["poke-engine/champions"]
+bss = ["poke-engine/bss"]
+terastallization = ["poke-engine/terastallization"]
+
