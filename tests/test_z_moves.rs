@@ -291,8 +291,8 @@ fn mcts_preserves_z_for_a_stronger_turn_two_blood_moon() {
         .replace_move(PokemonMoveIndex::M1, Choices::GIGATONHAMMER);
     state.side_two.get_active().moves[&PokemonMoveIndex::M1].disabled = false;
     state.side_two.last_used_move = LastUsedMove::Move(PokemonMoveIndex::M1);
-    state.side_two.get_active().hp = 230;
-    state.side_two.get_active().maxhp = 230;
+    state.side_two.get_active().hp = 220;
+    state.side_two.get_active().maxhp = 220;
 
     let normal_turn_one = apply_turn(
         &state,
