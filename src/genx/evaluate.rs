@@ -7,6 +7,7 @@ use crate::state::{Pokemon, PokemonStatus, Side, State};
 const POKEMON_ALIVE: f32 = 30.0;
 const POKEMON_HP: f32 = 100.0;
 const USED_TERA: f32 = -75.0;
+const USED_Z_MOVE: f32 = -50.0;
 
 const POKEMON_ATTACK_BOOST: f32 = 30.0;
 const POKEMON_DEFENSE_BOOST: f32 = 15.0;
@@ -161,6 +162,7 @@ pub fn evaluate(state: &State) -> f32 {
 
     let mut iter = state.side_one.pokemon.into_iter();
     let mut s1_used_tera = false;
+    let s1_used_z_move = state.side_one.z_move_used;
     while let Some(pkmn) = iter.next() {
         if pkmn.hp > 0 {
             score += evaluate_pokemon(pkmn);
@@ -204,8 +206,12 @@ pub fn evaluate(state: &State) -> f32 {
     if s1_used_tera {
         score += USED_TERA;
     }
+    if s1_used_z_move {
+        score += USED_Z_MOVE;
+    }
     let mut iter = state.side_two.pokemon.into_iter();
     let mut s2_used_tera = false;
+    let s2_used_z_move = state.side_two.z_move_used;
     while let Some(pkmn) = iter.next() {
         if pkmn.hp > 0 {
             score -= evaluate_pokemon(pkmn);
@@ -249,6 +255,9 @@ pub fn evaluate(state: &State) -> f32 {
     }
     if s2_used_tera {
         score -= USED_TERA;
+    }
+    if s2_used_z_move {
+        score -= USED_Z_MOVE;
     }
 
     score += state.side_one.side_conditions.reflect as f32 * REFLECT;
