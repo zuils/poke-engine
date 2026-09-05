@@ -128,6 +128,7 @@ impl PokemonName {
             PokemonName::FALINKSMEGA => (65, 135, 135, 70, 65, 100),
             PokemonName::RAICHUMEGAX => (60, 135, 95, 90, 95, 110),
             PokemonName::RAICHUMEGAY => (60, 100, 55, 160, 80, 130),
+            PokemonName::MAGEARNAMEGA => (80, 125, 115, 170, 115, 95),
             PokemonName::NECROZMAULTRA => (97, 167, 97, 167, 97, 129),
             _ => panic!("Base stats not implemented for {}", self),
         }
@@ -630,6 +631,12 @@ impl PokemonName {
                 types: (PokemonType::ELECTRIC, PokemonType::TYPELESS),
                 ability: Abilities::NOGUARD,
                 base_stats: (60, 100, 55, 160, 80, 130),
+            }),
+            (PokemonName::MAGEARNA, Items::MAGEARNITE) => Some(MegaEvolveData {
+                id: (PokemonName::MAGEARNAMEGA),
+                types: (PokemonType::STEEL, PokemonType::FAIRY),
+                ability: (Abilities::SOULHEART),
+                base_stats: (80, 125, 115, 170, 115, 95),
             }),
             _ => None,
         };

@@ -268,6 +268,7 @@ define_enum_with_from_str! {
         FALINKSITE,
         RAICHUNITEX,
         RAICHUNITEY,
+        MAGEARNITE,
 
         // z-moves
         NORMALIUMZ,
