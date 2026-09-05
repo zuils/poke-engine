@@ -4116,6 +4116,7 @@ pub fn generate_instructions_from_move_pair(
                 side_one_choice.category = z_move.category;
                 side_one_choice.base_power = z_move.base_power;
                 side_one_choice.is_z_move = true;
+                side_one_choice.flags.charge = false;
                 side_one_choice.z_fixed_damage_fraction = z_move.fixed_damage_fraction;
                 side_one_choice.z_sets_psychic_terrain = matches!(
                     z_move.terrain_effect,

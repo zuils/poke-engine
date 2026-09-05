@@ -1247,3 +1247,148 @@ fn test_all_signature_z_moves() {
         );
     }
 }
+
+#[test]
+fn test_z_move_damage() {
+    use poke_engine::engine::abilities::Abilities;
+    use poke_engine::engine::damage_calc::{calculate_damage, DamageRolls};
+    use poke_engine::state::{PokemonMoveIndex, PokemonNature, PokemonType, SideReference, State};
+
+    let mut state = State::default();
+
+    // Landorus-Therian @ Flyinium Z
+    // 252 Atk / 4 SpD / 252 Spe, Jolly
+    {
+        let landorus = state.side_one.get_active();
+        landorus.id = PokemonName::LANDORUSTHERIAN;
+        landorus.hp = 319;
+        landorus.maxhp = 319;
+        landorus.attack = 389;
+        landorus.defense = 216;
+        landorus.special_attack = 221;
+        landorus.special_defense = 197;
+        landorus.speed = 309;
+        landorus.types = (PokemonType::GROUND, PokemonType::FLYING);
+        landorus.item = Items::FLYINIUMZ;
+        landorus.ability = Abilities::INTIMIDATE;
+        landorus.nature = PokemonNature::JOLLY;
+        landorus.evs = (0, 252, 0, 0, 4, 252);
+
+        landorus.replace_move(PokemonMoveIndex::M0, Choices::EARTHQUAKE);
+        landorus.replace_move(PokemonMoveIndex::M1, Choices::FLY);
+        landorus.replace_move(PokemonMoveIndex::M2, Choices::ROCKSLIDE);
+        landorus.replace_move(PokemonMoveIndex::M3, Choices::STONEEDGE);
+    }
+
+    // Tangrowth @ Rocky Helmet
+    // 248 HP / 172 Def / 88 SpD, Relaxed
+    {
+        let tangrowth = state.side_two.get_active();
+        tangrowth.id = PokemonName::TANGROWTH;
+        tangrowth.hp = 403;
+        tangrowth.maxhp = 403;
+        tangrowth.attack = 236;
+        tangrowth.defense = 361;
+        tangrowth.special_attack = 256;
+        tangrowth.special_defense = 158;
+        tangrowth.speed = 122;
+        tangrowth.types = (PokemonType::GRASS, PokemonType::TYPELESS);
+        tangrowth.item = Items::ROCKYHELMET;
+        tangrowth.ability = Abilities::REGENERATOR;
+        tangrowth.nature = PokemonNature::RELAXED;
+        tangrowth.evs = (248, 0, 172, 0, 88, 0);
+
+        tangrowth.replace_move(PokemonMoveIndex::M0, Choices::GIGADRAIN);
+        tangrowth.replace_move(PokemonMoveIndex::M1, Choices::KNOCKOFF);
+        tangrowth.replace_move(PokemonMoveIndex::M2, Choices::HIDDENPOWERICE60);
+        tangrowth.replace_move(PokemonMoveIndex::M3, Choices::SLUDGEBOMB);
+    }
+
+    let landorus = state.side_one.get_active();
+    println!(
+        "Landorus stats: hp={} atk={} def={} spa={} spd={} spe={} evs={:?} nature={:?} level={}",
+        landorus.hp,
+        landorus.attack,
+        landorus.defense,
+        landorus.special_attack,
+        landorus.special_defense,
+        landorus.speed,
+        landorus.evs,
+        landorus.nature,
+        landorus.level,
+    );
+
+    let tangrowth = state.side_two.get_active();
+    println!(
+        "Tangrowth stats: hp={} atk={} def={} spa={} spd={} spe={} evs={:?} nature={:?} level={}",
+        tangrowth.hp,
+        tangrowth.attack,
+        tangrowth.defense,
+        tangrowth.special_attack,
+        tangrowth.special_defense,
+        tangrowth.speed,
+        tangrowth.evs,
+        tangrowth.nature,
+        tangrowth.level,
+    );
+
+    state.side_one.allow_z_moves = true;
+
+    let fly = MOVES.get(&Choices::FLY).unwrap();
+    let z_fly = get_z_move_for(state.side_one.get_active(), fly).unwrap();
+
+    let mut state_for_generation = state.clone();
+
+    let branches = generate_instructions_from_move_pair(
+        &mut state_for_generation,
+        &MoveChoice::MoveZ(PokemonMoveIndex::M1),
+        &MoveChoice::None,
+        false,
+    );
+
+    println!("Z instruction branches:");
+    for branch in &branches {
+        println!("{:#?}", branch.instruction_list);
+    }
+
+    let fly_damage =
+        calculate_damage(&state, &SideReference::SideOne, fly, DamageRolls::Max).unwrap();
+
+    let mut z_choice = fly.clone();
+    z_choice.move_type = z_fly.move_type;
+    z_choice.category = z_fly.category;
+    z_choice.base_power = z_fly.base_power;
+    z_choice.z_fixed_damage_fraction = z_fly.fixed_damage_fraction;
+
+    let z_fly_damage =
+        calculate_damage(&state, &SideReference::SideOne, &z_choice, DamageRolls::Max).unwrap();
+
+    println!("Fly damage: {:?}", fly_damage);
+    println!("Fly-Z damage: {:?}", z_fly_damage);
+
+    assert!(
+        fly_damage.0 < state.side_two.get_active().hp,
+        "regular Fly should not OHKO Tangrowth"
+    );
+    assert!(
+        z_fly_damage.0 >= state.side_two.get_active().hp,
+        "Fly-Z should OHKO Tangrowth"
+    );
+
+    let mut z_after = apply_turn(
+        &state,
+        MoveChoice::MoveZ(PokemonMoveIndex::M1),
+        MoveChoice::Move(PokemonMoveIndex::M0),
+    );
+
+    println!(
+        "Tangrowth HP after MoveZ(Fly): {}",
+        z_after.side_two.get_active().hp
+    );
+
+    assert_eq!(
+        z_after.side_two.get_active().hp,
+        0,
+        "MoveZ(Fly) should KO Tangrowth"
+    );
+}

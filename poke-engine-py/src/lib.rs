@@ -48,6 +48,17 @@ fn is_mega_available(mega_name: String, mega_availability: String) -> PyResult<b
     Ok(availability.allows(mega))
 }
 
+#[pyfunction]
+fn get_available_moves(py_state: PyState) -> Vec<String> {
+    let state: State = py_state.into();
+    let (s1_options, _) = state.root_get_all_options();
+
+    s1_options
+        .iter()
+        .map(|choice| movechoice_to_string(&state.side_one, choice))
+        .collect()
+}
+
 #[derive(Clone)]
 #[pyclass(name = "State", module = "poke_engine", get_all, from_py_object)]
 pub struct PyState {
@@ -1163,6 +1174,7 @@ fn py_poke_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calculate_damage, m)?)?;
     m.add_function(wrap_pyfunction!(generate_instructions, m)?)?;
     m.add_function(wrap_pyfunction!(is_mega_available, m)?)?;
+    m.add_function(wrap_pyfunction!(get_available_moves, m)?)?;
     m.add_function(wrap_pyfunction!(id, m)?)?;
     m.add_function(wrap_pyfunction!(mcts, m)?)?;
     m.add_class::<PyState>()?;
