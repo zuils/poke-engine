@@ -1486,4 +1486,74 @@ impl PokemonName {
             _ => false,
         }
     }
+
+    pub fn is_champions_mega(&self) -> bool {
+        match self {
+            PokemonName::DRAGONITEMEGA => true,
+            PokemonName::CLEFABLEMEGA => true,
+            PokemonName::MEGANIUMMEGA => true,
+            PokemonName::FERALIGATRMEGA => true,
+            PokemonName::EMBOARMEGA => true,
+            PokemonName::CHESNAUGHTMEGA => true,
+            PokemonName::DELPHOXMEGA => true,
+            PokemonName::GRENINJAMEGA => true,
+            PokemonName::CRABOMINABLEMEGA => true,
+            PokemonName::GOLURKMEGA => true,
+            PokemonName::SCOVILLAINMEGA => true,
+            PokemonName::GLIMMORAMEGA => true,
+            PokemonName::FLOETTEMEGA => true,
+            PokemonName::VICTREEBELMEGA => true,
+            PokemonName::STARMIEMEGA => true,
+            PokemonName::HAWLUCHAMEGA => true,
+            PokemonName::SKARMORYMEGA => true,
+            PokemonName::MEOWSTICMMEGA => true,
+            PokemonName::MEOWSTICFMEGA => true,
+            PokemonName::FROSLASSMEGA => true,
+            PokemonName::EXCADRILLMEGA => true,
+            PokemonName::DRAMPAMEGA => true,
+            PokemonName::CHIMECHOMEGA => true,
+            PokemonName::CHANDELUREMEGA => true,
+            PokemonName::STARAPTORMEGA => true,
+            PokemonName::SCOLIPEDEMEGA => true,
+            PokemonName::SCRAFTYMEGA => true,
+            PokemonName::EELEKTROSSMEGA => true,
+            PokemonName::PYROARMEGA => true,
+            PokemonName::MALAMARMEGA => true,
+            PokemonName::BARBARACLEMEGA => true,
+            PokemonName::DRAGALGEMEGA => true,
+            PokemonName::FALINKSMEGA => true,
+            PokemonName::RAICHUMEGAX => true,
+            PokemonName::RAICHUMEGAY => true,
+            _ => false,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::items::Items;
+    use crate::state::MegaAvailability;
+
+    #[test]
+    fn excadrill_mega_is_champions_only() {
+        assert!(PokemonName::EXCADRILL
+            .mega_evolve_target(Items::EXCADRITE, MegaAvailability::Legacy)
+            .is_none());
+
+        assert!(PokemonName::EXCADRILL
+            .mega_evolve_target(Items::EXCADRITE, MegaAvailability::Champions)
+            .is_some());
+    }
+
+    #[test]
+    fn tyranitar_mega_is_available_in_both() {
+        assert!(PokemonName::TYRANITAR
+            .mega_evolve_target(Items::TYRANITARITE, MegaAvailability::Legacy)
+            .is_some());
+
+        assert!(PokemonName::TYRANITAR
+            .mega_evolve_target(Items::TYRANITARITE, MegaAvailability::Champions)
+            .is_some());
+    }
 }

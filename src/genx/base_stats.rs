@@ -1,7 +1,7 @@
 use crate::engine::abilities::Abilities;
 use crate::engine::items::Items;
 use crate::pokemon::PokemonName;
-use crate::state::PokemonType;
+use crate::state::{MegaAvailability, PokemonType};
 
 pub struct MegaEvolveData {
     pub id: PokemonName,
@@ -133,8 +133,12 @@ impl PokemonName {
         }
     }
 
-    pub fn mega_evolve_target(&self, item: Items) -> Option<MegaEvolveData> {
-        match (self, item) {
+    pub fn mega_evolve_target(
+        &self,
+        item: Items,
+        mega_availability: MegaAvailability,
+    ) -> Option<MegaEvolveData> {
+        let result = match (self, item) {
             (PokemonName::VENUSAUR, Items::VENUSAURITE) => Some(MegaEvolveData {
                 id: PokemonName::VENUSAURMEGA,
                 types: (PokemonType::GRASS, PokemonType::POISON),
@@ -628,6 +632,8 @@ impl PokemonName {
                 base_stats: (60, 100, 55, 160, 80, 130),
             }),
             _ => None,
-        }
+        };
+
+        result.filter(|data| mega_availability.allows(data.id))
     }
 }

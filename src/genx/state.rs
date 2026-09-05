@@ -10,11 +10,11 @@ use crate::instruction::{
     StateInstructions,
 };
 use crate::pokemon::PokemonName;
-use crate::state::VolatileStatusBitset;
 use crate::state::{
     LastUsedMove, Pokemon, PokemonBoostableStat, PokemonIndex, PokemonMoveIndex, PokemonNature,
     PokemonSideCondition, PokemonStatus, PokemonType, Side, SideReference, State,
 };
+use crate::state::{MegaAvailability, VolatileStatusBitset};
 use core::panic;
 
 fn common_pkmn_stat_calc(stat: u16, ev: u16, level: u16) -> u16 {
@@ -306,11 +306,11 @@ define_enum_with_from_str! {
 }
 
 impl Pokemon {
-    pub fn can_mega_evolve(&self) -> bool {
+    pub fn can_mega_evolve(&self, mega_availability: MegaAvailability) -> bool {
         // this assumes that if you have the correct mega stone, you can always mega evolve
         // even if another pkmn on the team already mega evolved
         // it is incorrect but practically most teams aren't going to have multiple mega stones
-        if let Some(_mega_evolve_data) = self.id.mega_evolve_target(self.item) {
+        if let Some(_mega_evolve_data) = self.id.mega_evolve_target(self.item, mega_availability) {
             true
         } else {
             false
@@ -498,6 +498,7 @@ impl Pokemon {
         taunted: bool,
         can_tera: bool,
         side_can_mega: bool,
+        mega_availability: MegaAvailability,
         can_z_move: bool,
     ) {
         let mut iter = self.moves.into_iter();
@@ -529,7 +530,7 @@ impl Pokemon {
                 if can_tera {
                     vec.push(MoveChoice::MoveTera(iter.pokemon_move_index));
                 }
-                if side_can_mega && self.can_mega_evolve() {
+                if side_can_mega && self.can_mega_evolve(mega_availability) {
                     vec.push(MoveChoice::MoveMega(iter.pokemon_move_index));
                 }
                 if can_z_move
@@ -1195,6 +1196,7 @@ impl State {
                 taunted,
                 self.side_one.can_use_tera(),
                 self.side_one.can_use_mega(),
+                self.mega_availability,
                 self.side_one.can_use_z_move(),
             );
         }
@@ -1227,6 +1229,7 @@ impl State {
                 taunted,
                 self.side_two.can_use_tera(),
                 self.side_two.can_use_mega(),
+                self.mega_availability,
                 self.side_two.can_use_z_move(),
             );
         }
@@ -1317,6 +1320,7 @@ impl State {
                 taunted,
                 self.side_one.can_use_tera(),
                 self.side_one.can_use_mega(),
+                self.mega_availability,
                 self.side_one.can_use_z_move(),
             );
             if !self.side_one.trapped(side_two_active) {
@@ -1348,6 +1352,7 @@ impl State {
                 taunted,
                 self.side_two.can_use_tera(),
                 self.side_two.can_use_mega(),
+                self.mega_availability,
                 self.side_two.can_use_z_move(),
             );
             if !self.side_two.trapped(side_one_active) {

@@ -28,6 +28,48 @@ impl SideReference {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub enum MegaAvailability {
+    Legacy,
+    Champions,
+}
+
+impl Default for MegaAvailability {
+    fn default() -> Self {
+        Self::Legacy
+    }
+}
+
+impl std::fmt::Display for MegaAvailability {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Legacy => write!(f, "legacy"),
+            Self::Champions => write!(f, "champions"),
+        }
+    }
+}
+
+impl FromStr for MegaAvailability {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        match input.to_lowercase().as_str() {
+            "legacy" => Ok(Self::Legacy),
+            "champions" => Ok(Self::Champions),
+            _ => Err(()),
+        }
+    }
+}
+
+impl MegaAvailability {
+    pub fn allows(&self, pokemon: PokemonName) -> bool {
+        match self {
+            Self::Legacy => !pokemon.is_champions_mega(),
+            Self::Champions => true,
+        }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Hash, Copy, Clone)]
 pub enum PokemonSideCondition {
     AuroraVeil,
@@ -1332,6 +1374,7 @@ impl Side {
 pub struct State {
     pub side_one: Side,
     pub side_two: Side,
+    pub mega_availability: MegaAvailability,
     pub weather: StateWeather,
     pub terrain: StateTerrain,
     pub trick_room: StateTrickRoom,
@@ -1344,6 +1387,7 @@ impl Default for State {
         let mut s = State {
             side_one: Side::default(),
             side_two: Side::default(),
+            mega_availability: MegaAvailability::Legacy,
             weather: StateWeather {
                 weather_type: Weather::NONE,
                 turns_remaining: -1,
@@ -2442,6 +2486,7 @@ impl State {
             terrain: StateTerrain::deserialize(split[3]),
             trick_room: StateTrickRoom::deserialize(split[4]),
             team_preview: split[5].parse::<bool>().unwrap(),
+            mega_availability: MegaAvailability::Legacy,
             use_damage_dealt: false,
             use_last_used_move: false,
         };

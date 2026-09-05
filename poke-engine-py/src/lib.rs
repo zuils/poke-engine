@@ -16,9 +16,9 @@ use poke_engine::mcts_threaded::perform_mcts_shared_tree;
 use poke_engine::pokemon::PokemonName;
 use poke_engine::search::iterative_deepen_expectiminimax;
 use poke_engine::state::{
-    LastUsedMove, Move, Pokemon, PokemonIndex, PokemonMoves, PokemonNature, PokemonStatus,
-    PokemonType, Side, SideConditions, SidePokemon, State, StateTerrain, StateTrickRoom,
-    StateWeather, VolatileStatusBitset, VolatileStatusDurations,
+    LastUsedMove, MegaAvailability, Move, Pokemon, PokemonIndex, PokemonMoves, PokemonNature,
+    PokemonStatus, PokemonType, Side, SideConditions, SidePokemon, State, StateTerrain,
+    StateTrickRoom, StateWeather, VolatileStatusBitset, VolatileStatusDurations,
 };
 use std::str::FromStr;
 use std::time::Duration;
@@ -30,6 +30,22 @@ fn movechoice_to_string(side: &Side, move_choice: &MoveChoice) -> String {
         }
         _ => move_choice.to_string(side),
     }
+}
+
+#[pyfunction]
+fn is_mega_available(mega_name: String, mega_availability: String) -> PyResult<bool> {
+    let mega = PokemonName::from_str(&mega_name).map_err(|_| {
+        PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid Pokémon: {}", mega_name))
+    })?;
+
+    let availability = MegaAvailability::from_str(&mega_availability).map_err(|_| {
+        PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+            "Invalid Mega availability: {}",
+            mega_availability
+        ))
+    })?;
+
+    Ok(availability.allows(mega))
 }
 
 #[derive(Clone)]
@@ -44,6 +60,7 @@ pub struct PyState {
     pub trick_room: bool,
     pub trick_room_turns_remaining: i8,
     pub team_preview: bool,
+    pub mega_availability: String,
 }
 
 impl From<State> for PyState {
@@ -58,6 +75,7 @@ impl From<State> for PyState {
             trick_room: other.trick_room.active,
             trick_room_turns_remaining: other.trick_room.turns_remaining,
             team_preview: other.team_preview,
+            mega_availability: other.mega_availability.to_string(),
         }
     }
 }
@@ -80,6 +98,7 @@ impl Into<State> for PyState {
                 turns_remaining: self.trick_room_turns_remaining,
             },
             team_preview: self.team_preview,
+            mega_availability: MegaAvailability::from_str(&self.mega_availability).unwrap(),
             use_last_used_move: false,
             use_damage_dealt: false,
         };
@@ -101,6 +120,7 @@ impl PyState {
         trick_room=false,
         trick_room_turns_remaining=0,
         team_preview=false,
+        mega_availability="legacy".to_string(),
     ))]
     fn new(
         side_one: PySide,
@@ -112,6 +132,7 @@ impl PyState {
         trick_room: bool,
         trick_room_turns_remaining: i8,
         team_preview: bool,
+        mega_availability: String,
     ) -> Self {
         PyState {
             side_one,
@@ -123,6 +144,7 @@ impl PyState {
             trick_room,
             trick_room_turns_remaining,
             team_preview,
+            mega_availability,
         }
     }
     fn apply_instructions(&self, instructions: PyStateInstructions) -> PyState {
@@ -1140,6 +1162,7 @@ fn calculate_damage(
 fn py_poke_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calculate_damage, m)?)?;
     m.add_function(wrap_pyfunction!(generate_instructions, m)?)?;
+    m.add_function(wrap_pyfunction!(is_mega_available, m)?)?;
     m.add_function(wrap_pyfunction!(id, m)?)?;
     m.add_function(wrap_pyfunction!(mcts, m)?)?;
     m.add_class::<PyState>()?;

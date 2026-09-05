@@ -3908,13 +3908,14 @@ fn run_mega_evolutions(
 }
 
 fn mega_evolve(state: &mut State, side_ref: SideReference, instructions: &mut StateInstructions) {
+    let mega_availability = state.mega_availability;
     let side = state.get_side(&side_ref);
     let active_pkmn = side.get_active();
 
     // assumes that you can mega-evolve if this function is called
     let mega_evolve_data = active_pkmn
         .id
-        .mega_evolve_target(active_pkmn.item)
+        .mega_evolve_target(active_pkmn.item, mega_availability)
         .unwrap_or_else(|| {
             panic!(
                 "cannot mega evolve {:?} with {:?}",
