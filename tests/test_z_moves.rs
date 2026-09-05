@@ -1057,7 +1057,7 @@ fn test_all_signature_z_moves() {
         (
             PokemonName::LUNALA,
             Choices::MOONGEISTBEAM,
-            Items::LUNAIUMZ,
+            Items::LUNALIUMZ,
             "Menacing Moonraze Maelstrom",
             MoveCategory::Special,
             200.0,
@@ -1081,7 +1081,7 @@ fn test_all_signature_z_moves() {
         (
             PokemonName::NECROZMADAWNWINGS,
             Choices::MOONGEISTBEAM,
-            Items::LUNAIUMZ,
+            Items::LUNALIUMZ,
             "Menacing Moonraze Maelstrom",
             MoveCategory::Special,
             200.0,

@@ -336,7 +336,7 @@ fn crystal_type(item: Items) -> Option<PokemonType> {
         Items::MEWNIUMZ => PokemonType::PSYCHIC,
         Items::ULTRANECROZIUMZ => PokemonType::PSYCHIC,
         Items::SOLGANIUMZ => PokemonType::STEEL,
-        Items::LUNAIUMZ => PokemonType::GHOST,
+        Items::LUNALIUMZ => PokemonType::GHOST,
         Items::MIMIKIUMZ => PokemonType::FAIRY,
         Items::LYCANIUMZ => PokemonType::ROCK,
         Items::KOMMONIUMZ => PokemonType::DRAGON,
@@ -398,13 +398,13 @@ fn signature(pokemon: PokemonName, move_id: Choices, item: Items) -> Option<ZMov
         (PokemonName::SOLGALEO, Choices::SUNSTEELSTRIKE, Items::SOLGANIUMZ) => {
             ("Searing Sunraze Smash", MoveCategory::Physical, 200.0)
         }
-        (PokemonName::LUNALA, Choices::MOONGEISTBEAM, Items::LUNAIUMZ) => {
+        (PokemonName::LUNALA, Choices::MOONGEISTBEAM, Items::LUNALIUMZ) => {
             ("Menacing Moonraze Maelstrom", MoveCategory::Special, 200.0)
         }
         (PokemonName::NECROZMADUSKMANE, Choices::SUNSTEELSTRIKE, Items::SOLGANIUMZ) => {
             ("Searing Sunraze Smash", MoveCategory::Physical, 200.0)
         }
-        (PokemonName::NECROZMADAWNWINGS, Choices::MOONGEISTBEAM, Items::LUNAIUMZ) => {
+        (PokemonName::NECROZMADAWNWINGS, Choices::MOONGEISTBEAM, Items::LUNALIUMZ) => {
             ("Menacing Moonraze Maelstrom", MoveCategory::Special, 200.0)
         }
         (

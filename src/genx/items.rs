@@ -301,7 +301,7 @@ define_enum_with_from_str! {
         PIKASHUNIUMZ,
         ULTRANECROZIUMZ,
         SOLGANIUMZ,
-        LUNAIUMZ,
+        LUNALIUMZ,
         MIMIKIUMZ,
         LYCANIUMZ,
         KOMMONIUMZ,
