@@ -1,6 +1,6 @@
 use crate::engine::abilities::Abilities;
 use crate::engine::items::Items;
-use crate::pokemon::PokemonName;
+use crate::pokemon::PokemonName::{self, GOLISOPODMEGA};
 use crate::state::{MegaAvailability, PokemonType};
 
 pub struct MegaEvolveData {
@@ -92,6 +92,7 @@ impl PokemonName {
             PokemonName::GALLADEMEGA => (68, 165, 95, 65, 115, 110),
             PokemonName::AUDINOMEGA => (103, 60, 126, 80, 126, 50),
             PokemonName::DIANCIEMEGA => (50, 160, 110, 160, 110, 110),
+            PokemonName::NECROZMAULTRA => (97, 167, 97, 167, 97, 129),
 
             PokemonName::DRAGONITEMEGA => (91, 124, 115, 145, 125, 100),
             PokemonName::CLEFABLEMEGA => (95, 80, 93, 135, 110, 70),
@@ -129,7 +130,7 @@ impl PokemonName {
             PokemonName::RAICHUMEGAX => (60, 135, 95, 90, 95, 110),
             PokemonName::RAICHUMEGAY => (60, 100, 55, 160, 80, 130),
             PokemonName::MAGEARNAMEGA => (80, 125, 115, 170, 115, 95),
-            PokemonName::NECROZMAULTRA => (97, 167, 97, 167, 97, 129),
+            PokemonName::HEATRANMEGA => (91, 120, 106, 175, 141, 67),
             _ => panic!("Base stats not implemented for {}", self),
         }
     }
@@ -637,6 +638,18 @@ impl PokemonName {
                 types: (PokemonType::STEEL, PokemonType::FAIRY),
                 ability: (Abilities::SOULHEART),
                 base_stats: (80, 125, 115, 170, 115, 95),
+            }),
+            (PokemonName::HEATRAN, Items::HEATRANITE) => Some(MegaEvolveData {
+                id: (PokemonName::HEATRANMEGA),
+                types: (PokemonType::FIRE, PokemonType::STEEL),
+                ability: (Abilities::FLASHFIRE),
+                base_stats: (91, 120, 106, 175, 141, 67),
+            }),
+            (PokemonName::GOLISOPOD, Items::GOLISOPITE) => Some(MegaEvolveData {
+                id: (PokemonName::GOLISOPODMEGA),
+                types: (PokemonType::BUG, PokemonType::STEEL),
+                ability: (Abilities::TOUGHCLAWS),
+                base_stats: (75, 150, 175, 70, 120, 40),
             }),
             _ => None,
         };

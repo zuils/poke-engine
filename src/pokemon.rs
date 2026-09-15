@@ -1460,6 +1460,8 @@ define_enum_with_from_str! {
         RAICHUMEGAX,
         RAICHUMEGAY,
         MAGEARNAMEGA,
+        HEATRANMEGA,
+        GOLISOPODMEGA,
     },
     default = NONE
 }
@@ -1526,6 +1528,8 @@ impl PokemonName {
             PokemonName::RAICHUMEGAX => true,
             PokemonName::RAICHUMEGAY => true,
             PokemonName::MAGEARNAMEGA => true,
+            PokemonName::HEATRANMEGA => true,
+            PokemonName::GOLISOPODMEGA => true,
             _ => false,
         }
     }

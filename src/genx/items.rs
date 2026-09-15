@@ -269,6 +269,8 @@ define_enum_with_from_str! {
         RAICHUNITEX,
         RAICHUNITEY,
         MAGEARNITE,
+        HEATRANITE,
+        GOLISOPITE,
 
         // z-moves
         NORMALIUMZ,
