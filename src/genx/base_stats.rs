@@ -1,6 +1,6 @@
 use crate::engine::abilities::Abilities;
 use crate::engine::items::Items;
-use crate::pokemon::PokemonName::{self, GOLISOPODMEGA};
+use crate::pokemon::PokemonName;
 use crate::state::{MegaAvailability, PokemonType};
 
 pub struct MegaEvolveData {
